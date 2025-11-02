@@ -53,7 +53,8 @@ export default function EditorPage() {
         data={initialData}
         onPublish={async (data) => {
           console.log("Published data:", data);
-          alert("Page published! Check console for data.");
+          // In a real application, you would save this data to a database
+          // or API endpoint here
         }}
       />
     </div>

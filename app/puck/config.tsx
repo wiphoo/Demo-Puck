@@ -21,7 +21,7 @@ export type Props = {
     backgroundImage?: string;
   };
   ColumnsBlock: {
-    columns: number;
+    columns: "1" | "2" | "3" | "4";
   };
 };
 
@@ -131,12 +131,27 @@ export const config: Config<Props> = {
         backgroundImage: "",
       },
       render: ({ title, subtitle, backgroundImage }) => {
+        // Validate and sanitize background image URL
+        const isValidUrl = (url: string | undefined) => {
+          if (!url) return false;
+          try {
+            const urlObj = new URL(url);
+            return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+          } catch {
+            return false;
+          }
+        };
+
+        const safeBackgroundImage = isValidUrl(backgroundImage)
+          ? backgroundImage
+          : "";
+
         return (
           <div
             className="relative py-20 px-8 text-center rounded-lg mb-4"
             style={{
-              backgroundImage: backgroundImage
-                ? `url(${backgroundImage})`
+              backgroundImage: safeBackgroundImage
+                ? `url(${safeBackgroundImage})`
                 : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -155,16 +170,29 @@ export const config: Config<Props> = {
     ColumnsBlock: {
       fields: {
         columns: {
-          type: "number",
+          type: "select",
+          options: [
+            { label: "1 Column", value: "1" },
+            { label: "2 Columns", value: "2" },
+            { label: "3 Columns", value: "3" },
+            { label: "4 Columns", value: "4" },
+          ],
         },
       },
       defaultProps: {
-        columns: 2,
+        columns: "2",
       },
       render: ({ columns }) => {
+        const columnClasses = {
+          "1": "grid-cols-1",
+          "2": "grid-cols-2",
+          "3": "grid-cols-3",
+          "4": "grid-cols-4",
+        };
+        const numColumns = parseInt(columns);
         return (
-          <div className={`grid grid-cols-${columns} gap-4 mb-4`}>
-            {Array.from({ length: columns }).map((_, i) => (
+          <div className={`grid ${columnClasses[columns]} gap-4 mb-4`}>
+            {Array.from({ length: numColumns }).map((_, i) => (
               <div key={i} className="border border-gray-300 p-4 rounded">
                 <p className="text-gray-600">Column {i + 1}</p>
                 <p className="text-sm text-gray-500">Drop content here</p>
