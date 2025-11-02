@@ -136,7 +136,22 @@ export const config: Config<Props> = {
           if (!url) return false;
           try {
             const urlObj = new URL(url);
-            return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+            // Only allow http and https protocols to prevent XSS
+            if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+              return false;
+            }
+            // Prevent localhost and private IPs in production
+            const hostname = urlObj.hostname.toLowerCase();
+            if (
+              hostname === "localhost" ||
+              hostname === "127.0.0.1" ||
+              hostname.startsWith("192.168.") ||
+              hostname.startsWith("10.") ||
+              hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)
+            ) {
+              return false;
+            }
+            return true;
           } catch {
             return false;
           }
@@ -189,7 +204,7 @@ export const config: Config<Props> = {
           "3": "grid-cols-3",
           "4": "grid-cols-4",
         };
-        const numColumns = parseInt(columns);
+        const numColumns = Number(columns);
         return (
           <div className={`grid ${columnClasses[columns]} gap-4 mb-4`}>
             {Array.from({ length: numColumns }).map((_, i) => (
